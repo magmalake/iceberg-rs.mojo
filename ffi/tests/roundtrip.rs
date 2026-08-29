@@ -276,41 +276,30 @@ fn sql_catalog_roundtrip() {
     };
     assert_eq!(rc, 1, "{}", last_error());
     // Release the exported pair the way the Mojo binding's ArrowCData destructor
-    // does, then export a second one and import it instead.
+    // does — this is the path that segfaulted when the buffers were freed early.
     unsafe {
         ib_arrow_release(
             arr.as_mut_ptr() as *mut c_void,
             sch.as_mut_ptr() as *mut c_void,
         )
     };
-    let rc = unsafe {
-        ib_scan_next_batch(
-            scan,
-            arr.as_mut_ptr() as *mut c_void,
-            sch.as_mut_ptr() as *mut c_void,
-        )
-    };
-    assert!(rc >= 0, "{}", last_error());
-    if rc == 0 {
-        // Single-batch scan: re-open and take the first batch again.
-        unsafe { ib_scan_free(scan) };
-        let scan2 = ib_scan_new(table, std::ptr::null(), 0, std::ptr::null());
-        assert_eq!(
-            unsafe {
-                ib_scan_next_batch(
-                    scan2,
-                    arr.as_mut_ptr() as *mut c_void,
-                    sch.as_mut_ptr() as *mut c_void,
-                )
-            },
-            1,
-            "{}",
-            last_error()
-        );
-        unsafe { ib_scan_free(scan2) };
-        let scan = ib_scan_new(table, std::ptr::null(), 0, std::ptr::null());
-        let _ = scan;
-    }
+    unsafe { ib_scan_free(scan) };
+
+    // Then export again from a fresh scan and import it back, to prove the
+    // round-trip through the C Data Interface.
+    let scan = ib_scan_new(table, std::ptr::null(), 0, std::ptr::null());
+    assert_eq!(
+        unsafe {
+            ib_scan_next_batch(
+                scan,
+                arr.as_mut_ptr() as *mut c_void,
+                sch.as_mut_ptr() as *mut c_void,
+            )
+        },
+        1,
+        "{}",
+        last_error()
+    );
     let imported = unsafe {
         ib_batch_import(arr.as_mut_ptr() as *mut c_void, sch.as_mut_ptr() as *mut c_void)
     };
