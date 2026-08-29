@@ -285,8 +285,9 @@ struct ArrowCData(Movable):
 
 
 struct Scan(Movable):
-    """A planned table scan. Pull batches with `next()` until it returns False,
-    or inspect the plan with `plan_files()` without reading any data."""
+    """A planned table scan. Pull batches with `next()` until it returns an empty
+    `Optional`, or inspect the plan with `plan_files()` without reading any data.
+    """
 
     var lib: OwnedDLHandle
     var ptr: Int

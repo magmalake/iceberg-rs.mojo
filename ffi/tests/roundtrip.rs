@@ -312,7 +312,8 @@ fn sql_catalog_roundtrip() {
     }
 
     // String column materialisation.
-    let scan = ib_scan_new(table, std::ptr::null(), 0, Some(r#"["=","id",5]"#).map(c).unwrap().as_ptr());
+    let filter = c(r#"["=","id",5]"#);
+    let scan = ib_scan_new(table, std::ptr::null(), 0, filter.as_ptr());
     let mut batch: *mut c_void = std::ptr::null_mut();
     assert_eq!(unsafe { ib_scan_next(scan, &mut batch) }, 1, "{}", last_error());
     let rows = ib_batch_num_rows(batch) as usize;

@@ -21,8 +21,7 @@ It exists for two reasons:
 ## Design
 
 iceberg-rust is async (tokio) and speaks Arrow. This repo exposes it to Mojo the
-same way [lancedb.mojo](https://github.com/millfolio/lancedb.mojo) reaches
-LanceDB:
+same way this author's other Rust-cdylib bindings do:
 
 - **`ffi/`** — a Rust `cdylib` (`ffi/src/*.rs`) exporting 56 `extern "C"`
   functions (`ib_catalog_sql_new`, `ib_table_create`, `ib_scan_next`,
@@ -118,7 +117,7 @@ def main() raises:
         print(batch.int_col("id"), batch.float_col("amount"))
 ```
 
-Consume it like lancedb.mojo — `-I ../iceberg-rs.mojo/src` plus the installed
+Consume it with `-I ../iceberg-rs.mojo/src` plus the installed
 shim (no link flags; it is dlopened at runtime), or as a pixi source dependency
 (`iceberg-rs-mojo`, import `from iceberg_rs import …`).
 
@@ -241,8 +240,8 @@ Everything below is an upstream limit, not a limit of this binding.
 ## Cross-implementation check (PyIceberg)
 
 `pixi run pyiceberg` writes a table with this binding and then reads it back with
-**PyIceberg 0.11.1 / PyArrow 25.0.1** in a throwaway `uv` venv. Result on
-macOS-arm64, 2026-08-29:
+**PyIceberg 0.11.1 / PyArrow 25.0.1** in a throwaway `uv` venv. It runs in CI on
+both platforms; result on macOS-arm64, 2026-08-29:
 
 ```
 PyIceberg loaded the table via SqlCatalog (shared sqlite catalog)

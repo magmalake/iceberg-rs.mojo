@@ -19,7 +19,7 @@ use std::sync::Arc;
 use arrow_array::{
     ArrayRef, BooleanArray, Float64Array, Int64Array, RecordBatch, StringArray,
 };
-use arrow_schema::{DataType, Schema as ArrowSchema};
+use arrow_schema::Schema as ArrowSchema;
 use iceberg::arrow::{RecordBatchPartitionSplitter, schema_to_arrow_schema};
 use iceberg::spec::{DataFile, DataFileFormat};
 use iceberg::table::Table;
@@ -550,7 +550,3 @@ pub extern "C" fn ib_table_rollback(table: *mut c_void) -> i32 {
         None => -1,
     }
 }
-
-/// Unused today, but keeps `DataType` in scope for the cast helpers above.
-#[allow(dead_code)]
-fn _assert_datatype_in_scope(_d: &DataType) {}
