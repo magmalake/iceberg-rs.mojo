@@ -1,0 +1,6 @@
+name = "iceberg-rs-mojo"
+version = "0.1.0"
+description = "Apache Iceberg for Mojo: catalogs, scans and appends over a Rust cdylib wrapping iceberg-rust; first install compiles the shim"
+tags = ["iceberg", "lakehouse", "arrow", "parquet", "ffi"]
+# other tins this one depends on; omit if none
+tins = []

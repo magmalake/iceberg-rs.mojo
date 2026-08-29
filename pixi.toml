@@ -1,0 +1,70 @@
+[workspace]
+name = "iceberg-rs-mojo"
+version = "0.1.0"
+authors = ["Marius S <39998+winding-lines@users.noreply.github.com>"]
+description = "Apache Iceberg for Mojo — catalogs, scans and appends via FFI to a Rust cdylib over iceberg-rust. Track A of the magmalake roadmap: a working bridge, and the parity oracle for the native Mojo stack."
+preview = ["pixi-build"]
+channels = [
+    "https://conda.modular.com/max-nightly",
+    "conda-forge",
+]
+platforms = ["osx-arm64", "linux-64", "linux-aarch64"]
+
+[dependencies]
+# The FFI shim is a pixi package (ffi/); pixi builds the Rust cdylib and installs
+# lib/libicebergrsmojo.{dylib,so} into the env — no manual build step.
+iceberg-shim = { path = "ffi" }
+
+[feature.stable.dependencies]
+mojo = "==1.0.0"
+
+# Nice-to-have: the same sources on the Modular nightly. CI runs this env with
+# continue-on-error — nightly regularly breaks stdlib APIs under us.
+[feature.nightly.dependencies]
+modular = ">=26.6.0.dev2026082605,<27"
+
+[environments]
+default = ["stable"]
+nightly = ["nightly"]
+
+[tasks]
+# The round-trip gate: sqlite SQL catalog in a temp dir, a partitioned table,
+# two appends, scans with filter + projection, snapshot/metadata checks.
+# Everything runs inside one `bash -c` so ICEBERG_RS_TEST_DIR is exported to the
+# test binary as well as the rm/mkdir: pixi's task shell does not expand $PWD or
+# ${VAR:-default}, and the warehouse URL must be absolute (a relative `file://`
+# URL resolves against the filesystem root and fails as read-only).
+test = { cmd = "bash -c 'set -e; mkdir -p build; export ICEBERG_RS_TEST_DIR=\"$PWD/build/testdata\"; rm -rf \"$ICEBERG_RS_TEST_DIR\"; mkdir -p \"$ICEBERG_RS_TEST_DIR/warehouse\"; mojo build test/iceberg_test.mojo -I src -o build/iceberg-test; ./build/iceberg-test'" }
+# The cross-implementation check: the same table, read back by PyIceberg.
+# Needs `uv` on PATH; creates a throwaway venv under build/.
+pyiceberg = { cmd = "bash test/pyiceberg_check.sh", depends-on = ["test"] }
+# What CI runs on the stable env.
+test-all = { depends-on = ["test", "pyiceberg"] }
+# The Rust shim's own end-to-end test of the C ABI.
+test-ffi = { cmd = "cargo test --release --manifest-path ffi/Cargo.toml" }
+fmt = { cmd = "mojo format src test" }
+format-check = { cmd = "mojo format --check src test" }
+
+# ── pixi-build: consumable as a pixi source dependency ──────────────────────
+# Conda package name is iceberg-rs-mojo; the Mojo import stays
+# `from iceberg_rs import …`.
+[package]
+name = "iceberg-rs-mojo"
+version = "0.1.0"
+
+[package.build]
+backend = { name = "pixi-build-mojo", version = "0.*" }
+
+[package.build.config.pkg]
+path = "src/iceberg_rs"
+name = "iceberg_rs"
+
+[package.host-dependencies]
+mojo-compiler = "==1.0.0"
+
+[package.build-dependencies]
+mojo-compiler = "==1.0.0"
+
+[package.run-dependencies]
+mojo-compiler = ">=1.0.0,<2"
+iceberg-shim = { path = "ffi" }
