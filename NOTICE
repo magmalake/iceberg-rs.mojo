@@ -1,0 +1,8 @@
+Copyright 2026 Marius Seritan
+
+This software is licensed under the Apache License, Version 2.0.
+See the LICENSE file for the full license text.
+
+This product bundles a Rust FFI shim (ffi/) that links against
+Apache Iceberg Rust (https://github.com/apache/iceberg-rust), which is
+licensed under the Apache License, Version 2.0.

@@ -1,0 +1,24 @@
+# Builds the Iceberg FFI shim as a conda artifact: cargo compiles the cdylib and
+# it installs into $PREFIX/lib, where the Mojo binding's _find_lib() dlopens it.
+# Mirrors lancedb.mojo/ffi/recipe.yaml — no manual build step for consumers.
+package:
+  name: iceberg-shim
+  version: 0.1.0
+
+source:
+  - path: .
+    use_gitignore: true
+
+build:
+  number: 0
+  script:
+    - cargo build --release
+    - mkdir -p $PREFIX/lib
+    - if [ -f target/release/libicebergrsmojo.dylib ]; then cp target/release/libicebergrsmojo.dylib $PREFIX/lib/libicebergrsmojo.dylib && install_name_tool -id "@rpath/libicebergrsmojo.dylib" "$PREFIX/lib/libicebergrsmojo.dylib"; else cp target/release/libicebergrsmojo.so $PREFIX/lib/libicebergrsmojo.so; fi
+
+requirements:
+  build:
+    # aws-lc-sys (pulled in by rustls, via reqwest, via opendal) compiles C with
+    # the `cc` crate rather than cmake, so a C toolchain is all that's needed on
+    # top of cargo.
+    - rust

@@ -1,0 +1,40 @@
+[package]
+name = "icebergrsmojo"
+version = "0.1.0"
+edition = "2021"
+license = "Apache-2.0"
+description = "C-ABI shim over the iceberg-rust crates, for the iceberg-rs.mojo Mojo binding."
+
+[lib]
+name = "icebergrsmojo"
+# cdylib -> libicebergrsmojo.dylib / .so, dlopened by Mojo via OwnedDLHandle.
+# rlib as well so `cargo test` can drive the same extern "C" entry points the
+# Mojo binding dlopens (see ffi/tests/roundtrip.rs).
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+# iceberg 0.10.1 pins arrow/parquet 58 internally; we MUST match those major
+# versions or RecordBatch/Schema types differ across the boundary.
+iceberg = "0.10.1"
+iceberg-catalog-sql = "0.10.1"
+iceberg-catalog-rest = "0.10.1"
+iceberg-storage-opendal = "0.10.1"
+arrow = { version = "58", features = ["ffi"] }
+arrow-array = { version = "58", features = ["ffi"] }
+arrow-schema = "58"
+arrow-data = "58"
+parquet = "58"
+tokio = { version = "1", features = ["rt-multi-thread", "time", "sync"] }
+futures = "0.3"
+serde_json = "1"
+uuid = { version = "1", features = ["v4"] }
+# The SQL catalog only depends on sqlx's `any` driver; the concrete driver is
+# selected by the *binary* crate. We turn on sqlite (+ tokio runtime) here so the
+# zero-infrastructure local catalog works out of the box.
+sqlx = { version = "0.8.1", default-features = false, features = ["runtime-tokio", "any", "sqlite", "migrate"] }
+
+[profile.release]
+opt-level = 2
+
+[dev-dependencies]
+serde_json = "1"
