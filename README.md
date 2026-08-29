@@ -69,8 +69,9 @@ Record batches cross the boundary two ways:
   `pixi run test-ffi`. (The pixi package build uses conda's own `rust`.)
 - [uv](https://docs.astral.sh/uv/) — only for the PyIceberg cross-check.
 
-The first build pulls arrow, parquet, opendal and the iceberg crates (~320
-crates); expect a couple of minutes. Later builds are cached.
+The first build pulls arrow, parquet, opendal and the iceberg crates — 472
+crates in `ffi/Cargo.lock`; expect a couple of minutes locally and rather longer
+on a CI runner. Later builds are cached.
 
 ## Use
 
