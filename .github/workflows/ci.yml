@@ -1,0 +1,66 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # The Rust shim's own end-to-end test of the C ABI. Fast, and it fails first
+  # when iceberg-rust changes an API under us.
+  ffi:
+    name: ffi / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: ffi
+      - name: cargo test
+        run: cargo test --release --manifest-path ffi/Cargo.toml
+
+  # The Mojo binding: round-trip gate plus the PyIceberg cross-check.
+  test:
+    name: ${{ matrix.env }} / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    # Nightly is nice-to-have: the Modular nightly regularly moves stdlib APIs,
+    # and this repo's contract is that it compiles on stable 1.0.0.
+    continue-on-error: ${{ matrix.env == 'nightly' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        env: [default, nightly]
+    steps:
+      - uses: actions/checkout@v4
+
+      # pixi builds the shim inside a rattler-build sandbox with the conda
+      # `rust` package, but a host toolchain keeps `cargo` available for local
+      # iteration and warms the same registry.
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: ffi
+
+      # The PyIceberg cross-check builds its venv with uv.
+      - uses: astral-sh/setup-uv@v5
+
+      - uses: prefix-dev/setup-pixi@v0.9.0
+        with:
+          environments: ${{ matrix.env }}
+
+      - name: Round-trip gate
+        run: pixi run -e ${{ matrix.env }} test
+
+      - name: PyIceberg cross-check
+        run: pixi run -e ${{ matrix.env }} pyiceberg
