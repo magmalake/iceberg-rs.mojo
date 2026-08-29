@@ -24,7 +24,7 @@ iceberg-rust is async (tokio) and speaks Arrow. This repo exposes it to Mojo the
 same way [lancedb.mojo](https://github.com/millfolio/lancedb.mojo) reaches
 LanceDB:
 
-- **`ffi/`** — a Rust `cdylib` (`ffi/src/*.rs`) exporting ~56 `extern "C"`
+- **`ffi/`** — a Rust `cdylib` (`ffi/src/*.rs`) exporting 56 `extern "C"`
   functions (`ib_catalog_sql_new`, `ib_table_create`, `ib_scan_next`,
   `ib_table_commit`, …). Each blocks on one shared multi-thread tokio runtime, so
   the boundary is **synchronous**. Handles are opaque `*mut c_void`; strings are
@@ -62,7 +62,10 @@ Record batches cross the boundary two ways:
 
 ## Prerequisites
 
-- [pixi](https://pixi.sh) — pins Mojo `1.0.0` and builds the shim.
+- [pixi](https://pixi.sh) — pins Mojo `1.0.0` (the `default` environment) and
+  builds the shim. A `nightly` environment tracks the Modular nightly; the same
+  sources compile and pass there too (verified on `1.1.0.dev2026082905`), but
+  CI lets that job fail — stable `1.0.0` is the contract.
 - [Rust](https://rustup.rs) — `cargo` for local shim iteration and
   `pixi run test-ffi`. (The pixi package build uses conda's own `rust`.)
 - [uv](https://docs.astral.sh/uv/) — only for the PyIceberg cross-check.

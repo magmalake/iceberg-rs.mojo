@@ -296,6 +296,44 @@ def main() raises:
     check(exported.array_ptr() != 0, "exported ArrowArray pointer is non-null")
     _ = exported^
 
+    # A second, unpartitioned table exercises nulls, validity and batches().
+    # It is deliberately separate so the PyIceberg cross-check keeps looking at
+    # exactly the five rows above.
+    print("-- nulls, validity, batches() --")
+    var nt = cat.create_table("sales", "nullable", SCHEMA)
+    var nb = nt.builder()
+    nb.int_col("id", [Int64(7), Int64(8), Int64(9)])
+    nb.str_col("region", ["eu", "us", "eu"])
+    nb.float_col("amount", [1.0, 2.0, 3.0], [True, False, True])
+    var nbatch = nb.build()
+    nt.append(nbatch)
+    check_eq_int(
+        nt.pending_files(), 1, "one data file for an unpartitioned table"
+    )
+    _ = nt.commit()
+
+    var nscan = nt.scan()
+    var all_batches = nscan.batches()
+    var null_rows = 0
+    var nulls_seen = 0
+    for i in range(len(all_batches)):
+        var valid = all_batches[i].validity("amount")
+        var amounts = all_batches[i].float_col("amount")
+        var counts = all_batches[i].validity("count")
+        null_rows += len(valid)
+        for j in range(len(valid)):
+            if not valid[j]:
+                nulls_seen += 1
+                if amounts[j] != 0.0:
+                    raise Error("FAIL: a null amount should read back as 0.0")
+            # `count` was never supplied, so every row of it must be null.
+            if counts[j]:
+                raise Error(
+                    "FAIL: unsupplied column 'count' should be all-null"
+                )
+    check_eq_int(null_rows, 3, "batches() row count")
+    check_eq_int(nulls_seen, 1, "null amounts")
+
     # Hand the PyIceberg cross-check the coordinates of what we just wrote.
     with open("build/pyiceberg_env.sh", "w") as f:
         f.write(

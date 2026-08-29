@@ -970,6 +970,10 @@ def _get_validity(
         )
     )
     _ = n^
+    # `vals` is only ever touched through `.unsafe_ptr()`, so that call would be
+    # its last use and Mojo would free it while the shim is still writing values
+    # into it — heap corruption, not a clean crash. Keep it alive explicitly.
+    _ = vals^
     if got < 0:
         _fail(lib, "Batch.validity")
     var out = List[Bool]()

@@ -387,9 +387,9 @@ pub(crate) fn export_batch(
 }
 
 /// Import an Arrow C Data Interface struct-array pair into an opaque batch handle.
-/// **Consumes** the pair: after a successful call the caller must not release the
-/// structs itself. Returns a batch handle, or NULL on error (in which case the
-/// caller still owns the structs).
+/// **Consumes** the pair either way — success or failure — so the caller must
+/// never release the structs itself afterwards. Returns a batch handle, or NULL
+/// on error.
 ///
 /// # Safety
 /// The pointers must reference a live, correctly-formed `ArrowArray`/`ArrowSchema`
