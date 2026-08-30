@@ -1,5 +1,7 @@
 # iceberg-rs.mojo
 
+[![mojoshelf](https://mojoshelf.org/badge/iceberg-rs-mojo.svg)](https://mojoshelf.org/tins/iceberg-rs-mojo) [![mojo nightly](https://mojoshelf.org/badge/iceberg-rs-mojo/nightly.svg)](https://mojoshelf.org/tins/iceberg-rs-mojo)
+
 > Part of **magmalake** — data lake building blocks in Mojo.
 
 **Apache Iceberg for Mojo**, over a thin Rust `cdylib` that wraps
