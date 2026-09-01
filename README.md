@@ -20,6 +20,14 @@ It exists for two reasons:
    iceberg-rust produces for the same table — and, through the PyIceberg
    cross-check below, against the reference Python implementation too.
 
+## Install
+
+```sh
+pixi shelf add iceberg-rs-mojo
+```
+
+That resolves the tin from [mojoshelf](https://mojoshelf.org) and adds it — along with the tins it depends on — as **pixi git source dependencies**. magmalake tins are not published to a conda channel, so `pixi add iceberg-rs-mojo` will not find them.
+
 ## Design
 
 iceberg-rust is async (tokio) and speaks Arrow. This repo exposes it to Mojo the
