@@ -43,7 +43,11 @@ test-all = { depends-on = ["test", "pyiceberg"] }
 # The Rust shim's own end-to-end test of the C ABI.
 test-ffi = { cmd = "cargo test --release --manifest-path ffi/Cargo.toml" }
 fmt = { cmd = "mojo format src test" }
-format-check = { cmd = "mojo format --check src test" }
+# `mojo format` has no check mode in 1.0.0 — it rejects `--check`, and there is
+# none among the hidden options either — so the check is: format, then assert the
+# tree did not move. It rewrites the files as a side effect, which is what CI
+# wants and is harmless locally; run it with your own work committed or stashed.
+format-check = { cmd = "mojo format src test && git diff --exit-code -- src test" }
 
 # ── pixi-build: consumable as a pixi source dependency ──────────────────────
 # Conda package name is iceberg-rs-mojo; the Mojo import stays
