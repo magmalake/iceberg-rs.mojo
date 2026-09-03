@@ -14,6 +14,10 @@ platforms = ["osx-arm64", "linux-64", "linux-aarch64"]
 # The FFI shim is a pixi package (ffi/); pixi builds the Rust cdylib and installs
 # lib/libicebergrsmojo.{dylib,so} into the env — no manual build step.
 iceberg-shim = { path = "ffi" }
+# Added by `pixi shelf add lint-mojo`: the linter comes from GitHub as a pixi
+# source dependency pinned at the revision mojoshelf published, and builds
+# the `mojolint` executable into every environment next to mojo-lsp-server.
+lint-mojo = { git = "https://github.com/magmalake/lint.mojo.git", rev = "2a12807b7847984aff2c8bf148b0eb7515a99844" }
 
 [feature.stable.dependencies]
 mojo = "==1.0.0"
@@ -42,6 +46,9 @@ pyiceberg = { cmd = "bash test/pyiceberg_check.sh", depends-on = ["test"] }
 test-all = { depends-on = ["test", "pyiceberg"] }
 # The Rust shim's own end-to-end test of the C ABI.
 test-ffi = { cmd = "cargo test --release --manifest-path ffi/Cargo.toml" }
+# mojolint (lint-mojo, below): the origin and threading mistakes the compiler
+# lets through, with mojo-lsp-server behind the rules. Exit 1 on findings.
+lint = { cmd = "mojolint --lsp -I src src test" }
 fmt = { cmd = "mojo format src test" }
 # `mojo format` has no check mode in 1.0.0 — it rejects `--check`, and there is
 # none among the hidden options either — so the check is: format, then assert the

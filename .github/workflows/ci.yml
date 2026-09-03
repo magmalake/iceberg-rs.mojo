@@ -63,5 +63,8 @@ jobs:
       - name: Round-trip gate
         run: pixi run -e ${{ matrix.env }} test
 
+      - name: Lint (mojolint --lsp)
+        run: pixi run -e ${{ matrix.env }} lint
+
       - name: PyIceberg cross-check
         run: pixi run -e ${{ matrix.env }} pyiceberg
