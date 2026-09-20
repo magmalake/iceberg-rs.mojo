@@ -20,12 +20,12 @@ iceberg-shim = { path = "ffi" }
 lint-mojo = { git = "https://github.com/magmalake/lint.mojo.git", rev = "3fa66644756c1de7aece83e5a89375323b6e0ce7" }
 
 [feature.stable.dependencies]
-mojo = "==1.0.0"
+mojo = "==1.1.0"
 
 # Nice-to-have: the same sources on the Modular nightly. CI runs this env with
 # continue-on-error — nightly regularly breaks stdlib APIs under us.
 [feature.nightly.dependencies]
-modular = ">=26.6.0.dev2026082605,<27"
+modular = ">=26.7.0.dev2026092005,<28"
 
 [environments]
 default = ["stable"]
@@ -50,7 +50,7 @@ test-ffi = { cmd = "cargo test --release --manifest-path ffi/Cargo.toml" }
 # lets through, with mojo-lsp-server behind the rules. Exit 1 on findings.
 lint = { cmd = "mojolint --lsp -I src src test" }
 fmt = { cmd = "mojo format src test" }
-# `mojo format` has no check mode in 1.0.0 — it rejects `--check`, and there is
+# `mojo format` has no check mode in 1.1.0 — it rejects `--check`, and there is
 # none among the hidden options either — so the check is: format, then assert the
 # tree did not move. It rewrites the files as a side effect, which is what CI
 # wants and is harmless locally; run it with your own work committed or stashed.
@@ -71,11 +71,11 @@ path = "src/iceberg_rs"
 name = "iceberg_rs"
 
 [package.host-dependencies]
-mojo-compiler = "==1.0.0"
+mojo-compiler = "==1.1.0"
 
 [package.build-dependencies]
-mojo-compiler = "==1.0.0"
+mojo-compiler = "==1.1.0"
 
 [package.run-dependencies]
-mojo-compiler = ">=1.0.0,<2"
+mojo-compiler = ">=1.1.0,<2"
 iceberg-shim = { path = "ffi" }
