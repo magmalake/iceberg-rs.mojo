@@ -34,7 +34,7 @@ jobs:
     name: ${{ matrix.env }} / ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     # Nightly is nice-to-have: the Modular nightly regularly moves stdlib APIs,
-    # and this repo's contract is that it compiles on stable 1.0.0.
+    # and this repo's contract is that it compiles on stable 1.1.0.
     continue-on-error: ${{ matrix.env == 'nightly' }}
     strategy:
       fail-fast: false

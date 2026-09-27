@@ -67,16 +67,16 @@ Record batches cross the boundary two ways:
   *Status:* the C Data Interface **structs and their lifecycle are implemented and
   tested end to end** (export → release, export → import → read back). Importing
   them into marrow arrays is not wired up in this repo — marrow currently pins
-  Mojo `1.0.0b2` and this repo targets stable `1.0.0` — so the materialising
+  Mojo `1.0.0b2` and this repo targets stable `1.1.0` — so the materialising
   helpers use the typed-copy path instead. `ArrowCData.array_ptr()` /
   `schema_ptr()` are the integration points when marrow catches up.
 
 ## Prerequisites
 
-- [pixi](https://pixi.sh) — pins Mojo `1.0.0` (the `default` environment) and
+- [pixi](https://pixi.sh) — pins Mojo `1.1.0` (the `default` environment) and
   builds the shim. A `nightly` environment tracks the Modular nightly; the same
   sources compile and pass there too (verified on `1.1.0.dev2026082905`), but
-  CI lets that job fail — stable `1.0.0` is the contract.
+  CI lets that job fail — stable `1.1.0` is the contract.
 - [Rust](https://rustup.rs) — `cargo` for local shim iteration and
   `pixi run test-ffi`. (The pixi package build uses conda's own `rust`.)
 - [uv](https://docs.astral.sh/uv/) — only for the PyIceberg cross-check.
