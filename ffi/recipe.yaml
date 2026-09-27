@@ -3,7 +3,7 @@
 # Mirrors lancedb.mojo/ffi/recipe.yaml — no manual build step for consumers.
 package:
   name: iceberg-shim
-  version: 0.1.0
+  version: 0.1.1
 
 source:
   - path: .

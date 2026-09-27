@@ -1,6 +1,6 @@
 [package]
 name = "icebergrsmojo"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 license = "Apache-2.0"
 description = "C-ABI shim over the iceberg-rust crates, for the iceberg-rs.mojo Mojo binding."

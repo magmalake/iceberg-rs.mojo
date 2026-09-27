@@ -1,6 +1,6 @@
 [workspace]
 name = "iceberg-rs-mojo"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Marius S <39998+winding-lines@users.noreply.github.com>"]
 description = "Apache Iceberg for Mojo — catalogs, scans and appends via FFI to a Rust cdylib over iceberg-rust. Track A of the magmalake roadmap: a working bridge, and the parity oracle for the native Mojo stack."
 preview = ["pixi-build"]
@@ -61,7 +61,7 @@ format-check = { cmd = "mojo format src test && git diff --exit-code -- src test
 # `from iceberg_rs import …`.
 [package]
 name = "iceberg-rs-mojo"
-version = "0.1.0"
+version = "0.1.1"
 
 [package.build]
 backend = { name = "pixi-build-mojo", version = "0.*" }
