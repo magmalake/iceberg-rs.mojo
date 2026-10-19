@@ -25,7 +25,7 @@ mojo = "==1.1.0"
 # Nice-to-have: the same sources on the Modular nightly. CI runs this env with
 # continue-on-error — nightly regularly breaks stdlib APIs under us.
 [feature.nightly.dependencies]
-modular = ">=26.7.0.dev2026092005,<28"
+modular = ">=26.7.0.dev2026101905,<28"
 
 [environments]
 default = ["stable"]
