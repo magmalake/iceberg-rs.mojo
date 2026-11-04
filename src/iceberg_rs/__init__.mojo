@@ -30,29 +30,33 @@ a foreign pointer.
         print(batch.int_col("id"))
 """
 
-from std.os import getenv
 from std.sys.info import CompilationTarget
 from std.ffi import OwnedDLHandle, c_int, c_char
+
+from ._dlopen import open_library
 
 
 # ── library loading ───────────────────────────────────────────────────────────
 
 
-def _find_lib() -> String:
-    """Path to libicebergrsmojo: `$CONDA_PREFIX/lib` (installed by the
-    `iceberg-shim` pixi package), else `ffi/target/release` for a bare checkout.
-    """
-    var ext = String("dylib") if CompilationTarget.is_macos() else String("so")
-    var prefix = getenv("CONDA_PREFIX", "")
-    if prefix == "":
-        return String("ffi/target/release/libicebergrsmojo.") + ext
-    return prefix + "/lib/libicebergrsmojo." + ext
+comptime _SHIM_FILE = (
+    "libicebergrsmojo.dylib"
+    if CompilationTarget.is_macos()
+    else "libicebergrsmojo.so"
+)
 
 
 def _open() raises -> OwnedDLHandle:
-    """Open the shim. dlopen refcounts, so every handle is cheap after the first.
+    """Open the shim, found by `_dlopen.open_library` with or without
+    `CONDA_PREFIX`: `$CONDA_PREFIX/lib` (installed by the `iceberg-shim` pixi
+    package), next to the executable or in its `../lib`, then the binary's
+    rpath. dlopen refcounts, so every handle is cheap after the first.
+
+    Raises:
+        Error: If the shim can't be found; the message names every place
+            searched and says to set `CONDA_PREFIX`.
     """
-    return OwnedDLHandle(_find_lib())
+    return open_library("iceberg-rs.mojo", _SHIM_FILE)
 
 
 def _cstr(s: String) -> List[UInt8]:

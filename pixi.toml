@@ -38,7 +38,9 @@ nightly = ["nightly"]
 # test binary as well as the rm/mkdir: pixi's task shell does not expand $PWD or
 # ${VAR:-default}, and the warehouse URL must be absolute (a relative `file://`
 # URL resolves against the filesystem root and fails as read-only).
-test = { cmd = "bash -c 'set -e; mkdir -p build; export ICEBERG_RS_TEST_DIR=\"$PWD/build/testdata\"; rm -rf \"$ICEBERG_RS_TEST_DIR\"; mkdir -p \"$ICEBERG_RS_TEST_DIR/warehouse\"; mojo build test/iceberg_test.mojo -I src -o build/iceberg-test; ./build/iceberg-test'" }
+# The dlopen test runs twice, the second time with CONDA_PREFIX unset: the
+# shim must then be found through the binary's rpath, as from a plain shell.
+test = { cmd = "bash -c 'set -e; mkdir -p build; export ICEBERG_RS_TEST_DIR=\"$PWD/build/testdata\"; rm -rf \"$ICEBERG_RS_TEST_DIR\"; mkdir -p \"$ICEBERG_RS_TEST_DIR/warehouse\"; mojo build test/iceberg_test.mojo -I src -o build/iceberg-test; ./build/iceberg-test; mojo build test/dlopen_test.mojo -I src -o build/dlopen-test; ./build/dlopen-test; env -u CONDA_PREFIX ./build/dlopen-test'" }
 # The cross-implementation check: the same table, read back by PyIceberg.
 # Needs `uv` on PATH; creates a throwaway venv under build/.
 pyiceberg = { cmd = "bash test/pyiceberg_check.sh", depends-on = ["test"] }
