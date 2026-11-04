@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.1.3 - 2026-11-03
+
 - The shim is found without `CONDA_PREFIX`: after `$CONDA_PREFIX/lib`,
   iceberg-rs looks next to the executable, in its `../lib`, and on the
   binary's rpath (the environment `mojo build` ran in), so a binary built
