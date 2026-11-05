@@ -11,15 +11,43 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # A release PR (only versions, CHANGELOG.md, revs and locks change; see
+  # tools/release_only.py in magmalake/.github) skips the macOS, nightly and
+  # extra jobs below and runs a consumer build of the PR head instead. Every
+  # other PR runs everything. The verdict is its own fast job because the jobs
+  # below wait for it; the builds are the next one.
+  release:
+    if: github.event_name == 'pull_request'
+    uses: magmalake/.github/.github/workflows/release-check.yml@main
+    permissions:
+      contents: read
+      pull-requests: read
+    with:
+      classify-only: true
+
+  release-check:
+    needs: release
+    if: needs.release.outputs.release_only == 'true'
+    uses: magmalake/.github/.github/workflows/release-check.yml@main
+    permissions:
+      contents: read
+      pull-requests: read
+    with:
+      # The unit tests run in the stable / ubuntu-latest job below.
+      task: ""
+
+
   # The Rust shim's own end-to-end test of the C ABI. Fast, and it fails first
   # when iceberg-rust changes an API under us.
   ffi:
+    needs: release
+    if: ${{ !cancelled() }}
     name: ffi / ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: ${{ fromJSON(needs.release.outputs.release_only == 'true' && '["ubuntu-latest"]' || '["ubuntu-latest", "macos-latest"]') }}
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
@@ -31,6 +59,8 @@ jobs:
 
   # The Mojo binding: round-trip gate plus the PyIceberg cross-check.
   test:
+    needs: release
+    if: ${{ !cancelled() }}
     name: ${{ matrix.env }} / ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     # Nightly is nice-to-have: the Modular nightly regularly moves stdlib APIs,
@@ -39,8 +69,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest]
-        env: [default, nightly]
+        os: ${{ fromJSON(needs.release.outputs.release_only == 'true' && '["ubuntu-latest"]' || '["ubuntu-latest", "macos-latest"]') }}
+        env: ${{ fromJSON(needs.release.outputs.release_only == 'true' && '["default"]' || '["default", "nightly"]') }}
     steps:
       - uses: actions/checkout@v4
 
@@ -68,3 +98,29 @@ jobs:
 
       - name: PyIceberg cross-check
         run: pixi run -e ${{ matrix.env }} pyiceberg
+
+  # The one check to require: every job above passed or, on a release-only PR,
+  # was skipped in favour of the release job's consumer build.
+  ci:
+    if: ${{ always() }}
+    needs: [release, release-check, ffi, test]
+    runs-on: ubuntu-latest
+    steps:
+      - env:
+          NEEDS: ${{ toJSON(needs) }}
+        run: |
+          python3 - <<'PY'
+          import json, os, sys
+          needs = json.loads(os.environ["NEEDS"])
+          release = needs.pop("release")
+          build = needs.pop("release-check", {"result": "skipped"})
+          release_only = release["outputs"].get("release_only") == "true"
+          ok = {"success", "skipped"} if release_only else {"success"}
+          bad = {k: v["result"] for k, v in needs.items() if v["result"] not in ok}
+          for k, v in (("release", release), ("release-check", build)):
+              if v["result"] not in ("success", "skipped"):
+                  bad[k] = v["result"]
+          print("release-only:", release_only, "results:", {k: v["result"] for k, v in needs.items()})
+          if bad:
+              sys.exit(f"did not succeed: {bad}")
+          PY
