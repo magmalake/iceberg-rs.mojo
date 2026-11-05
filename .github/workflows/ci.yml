@@ -33,7 +33,8 @@ jobs:
       contents: read
       pull-requests: read
     with:
-      # The unit tests run in the stable / ubuntu-latest job below.
+      # The test legs below are skipped on release PRs, and the consumer build
+      # is the check (the tests need the Rust toolchain and uv, which the shared job does not set up).
       task: ""
 
 
@@ -41,13 +42,13 @@ jobs:
   # when iceberg-rust changes an API under us.
   ffi:
     needs: release
-    if: ${{ !cancelled() }}
+    if: ${{ !cancelled() && needs.release.outputs.release_only != 'true' }}
     name: ffi / ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        os: ${{ fromJSON(needs.release.outputs.release_only == 'true' && '["ubuntu-latest"]' || '["ubuntu-latest", "macos-latest"]') }}
+        os: [ubuntu-latest, macos-latest]
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
@@ -60,7 +61,7 @@ jobs:
   # The Mojo binding: round-trip gate plus the PyIceberg cross-check.
   test:
     needs: release
-    if: ${{ !cancelled() }}
+    if: ${{ !cancelled() && needs.release.outputs.release_only != 'true' }}
     name: ${{ matrix.env }} / ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     # Nightly is nice-to-have: the Modular nightly regularly moves stdlib APIs,
@@ -69,8 +70,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ${{ fromJSON(needs.release.outputs.release_only == 'true' && '["ubuntu-latest"]' || '["ubuntu-latest", "macos-latest"]') }}
-        env: ${{ fromJSON(needs.release.outputs.release_only == 'true' && '["default"]' || '["default", "nightly"]') }}
+        os: [ubuntu-latest, macos-latest]
+        env: [default, nightly]
     steps:
       - uses: actions/checkout@v4
 
