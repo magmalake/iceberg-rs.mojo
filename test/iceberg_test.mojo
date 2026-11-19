@@ -48,7 +48,7 @@ def check_eq_int(got: Int, want: Int, what: String) raises:
 
 
 def contains(haystack: String, needle: String) -> Bool:
-    return haystack.find(needle) >= 0
+    return needle in haystack
 
 
 def append_rows(
@@ -170,10 +170,10 @@ def main() raises:
 
     var snaps = t.snapshots_json()
     var n_snaps = 0
-    var idx = snaps.find('"snapshot-id"')
+    var idx = snaps.find('"snapshot-id"').or_else(-1)
     while idx >= 0:
         n_snaps += 1
-        idx = snaps.find('"snapshot-id"', idx + 1)
+        idx = snaps.find('"snapshot-id"', idx + 1).or_else(-1)
     check_eq_int(n_snaps, 2, "snapshot count")
 
     print("-- scan: all rows --")
@@ -268,10 +268,10 @@ def main() raises:
     var plan_scan = t.scan()
     var plan = plan_scan.plan_files()
     var n_files = 0
-    var pidx = plan.find('"data-file-path"')
+    var pidx = plan.find('"data-file-path"').or_else(-1)
     while pidx >= 0:
         n_files += 1
-        pidx = plan.find('"data-file-path"', pidx + 1)
+        pidx = plan.find('"data-file-path"', pidx + 1).or_else(-1)
     check_eq_int(
         n_files,
         4,
