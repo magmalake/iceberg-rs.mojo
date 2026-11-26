@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## 0.2.2 - 2026-11-26
+
+### Changed
+
+- Pins lint-mojo 0.2.2.
+
 ## 0.2.1 - 2026-11-25
 
 ### Changed
