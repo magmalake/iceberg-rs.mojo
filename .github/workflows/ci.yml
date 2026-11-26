@@ -41,7 +41,7 @@ jobs:
       # The test legs below are skipped on release PRs, and the consumer build
       # is the check (the tests need the Rust toolchain and uv, which the shared job does not set up).
       task: ""
-      mojo-compiler: "==1.3.0.dev2026112505"
+      mojo-compiler: "==1.3.0.dev2026112605"
 
 
   # The Rust shim's own end-to-end test of the C ABI. Fast, and it fails first
