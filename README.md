@@ -67,13 +67,13 @@ Record batches cross the boundary two ways:
   *Status:* the C Data Interface **structs and their lifecycle are implemented and
   tested end to end** (export → release, export → import → read back). Importing
   them into marrow arrays is not wired up in this repo — marrow currently pins
-  Mojo `1.0.0b2` and this repo targets `1.3.0.dev2026112505` — so the materialising
+  Mojo `1.0.0b2` and this repo targets `1.3.0.dev2026112605` — so the materialising
   helpers use the typed-copy path instead. `ArrowCData.array_ptr()` /
   `schema_ptr()` are the integration points when marrow catches up.
 
 ## Prerequisites
 
-- [pixi](https://pixi.sh) — pins Mojo `1.3.0.dev2026112505`, the nightly every
+- [pixi](https://pixi.sh) — pins Mojo `1.3.0.dev2026112605`, the nightly every
   magmalake tin is pinned to, and builds the shim.
 - [Rust](https://rustup.rs) — `cargo` for local shim iteration and
   `pixi run test-ffi`. (The pixi package build uses conda's own `rust`.)
